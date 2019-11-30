@@ -1,0 +1,15 @@
+aws s3api create-bucket --bucket=terraform-serverless-example-om --region=us-east-1
+
+Compress-Archive main.js ../example.zip -Update
+
+aws s3 cp example.zip s3://terraform-serverless-example-om/v1.0.3/example.zip
+
+terraform apply -var="app_version=1.0.3"
+
+curl $(terraform output base_url) -X POST -d 'hello, world from http'
+
+aws sqs send-message --queue-url $(terraform output sqs_url) --message-body "hello, world from sqs"
+
+aws lambda invoke --region=us-east-1 --function-name=ServerlessExample --payload='{\"hello\":\"world\"}' output.txt 
+
+terraform destroy -var="app_version=0.0.0"
